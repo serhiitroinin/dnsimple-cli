@@ -7,7 +7,7 @@ class DnsimpleCli < Formula
   on_macos do
     if Hardware::CPU.intel?
       url "https://github.com/serhiitroinin/dnsimple-cli/releases/download/v#{version}/dnsimple-darwin-x64.tar.gz"
-      sha256 "669151b279f21111206294dc89c9667d280c918c14141421206c1cd11486eea1"
+      sha256 "33d0dd238e719045c5b1d2dff6112246975bc7247378f320b00fe06a4d05a1f7"
 
       def install
         bin.install "dnsimple"
@@ -15,7 +15,7 @@ class DnsimpleCli < Formula
     end
     if Hardware::CPU.arm?
       url "https://github.com/serhiitroinin/dnsimple-cli/releases/download/v#{version}/dnsimple-darwin-arm64.tar.gz"
-      sha256 "80137e5747cf0617c2e9747ba49e3330e7cd84cd1babd4e332fc7f1ef11520ad"
+      sha256 "2b6aa2621fda6f567fa09c2507dd43de4a4eb033a85b437bb0e550b299e99e20"
 
       def install
         bin.install "dnsimple"
@@ -26,7 +26,7 @@ class DnsimpleCli < Formula
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
       url "https://github.com/serhiitroinin/dnsimple-cli/releases/download/v#{version}/dnsimple-linux-x64.tar.gz"
-      sha256 "6556ef20355c8f7c08060561ea0b97869c9b19009b1e8517fdeb71ef88b2f415"
+      sha256 "ef36da0422ef9392015a208e127faf41915663e5c9654c0a928298480279118d"
 
       def install
         bin.install "dnsimple"
@@ -34,7 +34,7 @@ class DnsimpleCli < Formula
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
       url "https://github.com/serhiitroinin/dnsimple-cli/releases/download/v#{version}/dnsimple-linux-arm64.tar.gz"
-      sha256 "c944869ddead27c67a2e4fff7aed360f5f0742d6a4b597508cedd7151d3b656d"
+      sha256 "398237f81908c58325ea9d9d7496d1b2a3c45240cba40fb66a21577b45b3ff3b"
 
       def install
         bin.install "dnsimple"

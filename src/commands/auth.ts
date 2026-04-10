@@ -19,7 +19,7 @@ export function authCommand(): Command {
 
       try {
         const client = new DnsimpleClient();
-        const resp = await client.get("/_whoami");
+        const resp = await client.get("/whoami");
         const account = resp.data.account;
         if (account) {
           setConfig("accountId", String(account.id));
@@ -70,7 +70,7 @@ export function authCommand(): Command {
 
       try {
         const client = new DnsimpleClient();
-        const resp = await client.get("/_whoami");
+        const resp = await client.get("/whoami");
         const data = resp.data;
 
         if (data.account) {

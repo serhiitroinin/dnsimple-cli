@@ -1,6 +1,6 @@
 {
   "name": "dnsimple-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A comprehensive CLI for the DNSimple DNS management API",
   "module": "src/index.ts",
   "type": "module",

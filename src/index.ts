@@ -29,7 +29,7 @@ program
   .description(
     "CLI for the DNSimple API — manage domains, DNS, certificates, and more"
   )
-  .version("1.0.1")
+  .version("1.0.2")
   .configureHelp({
     sortSubcommands: true,
   });

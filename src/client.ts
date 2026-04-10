@@ -36,7 +36,7 @@ export class DnsimpleClient {
       Authorization: `Bearer ${this.config.accessToken}`,
       Accept: "application/json",
       "Content-Type": "application/json",
-      "User-Agent": "dnsimple-cli/1.0.1",
+      "User-Agent": "dnsimple-cli/1.0.2",
     };
   }
 

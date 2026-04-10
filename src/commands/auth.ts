@@ -23,9 +23,17 @@ export function authCommand(): Command {
         const account = resp.data.account;
         if (account) {
           setConfig("accountId", String(account.id));
-          printSuccess(
-            `Authenticated as ${account.email} (account: ${account.id})`
-          );
+          // Account access tokens (dnsimple_a_*) intentionally have no
+          // associated email — DNSimple returns `email: null`. Fall back to
+          // the account id, and surface the plan so the user can confirm
+          // they hit the right account.
+          const who = account.email
+            ? `${account.email} (account: ${account.id})`
+            : `account ${account.id}`;
+          const plan = account.plan_identifier
+            ? ` [${account.plan_identifier}]`
+            : "";
+          printSuccess(`Authenticated as ${who}${plan}`);
         } else if (resp.data.user) {
           printSuccess(`Authenticated as user: ${resp.data.user.email}`);
           // Try to get accounts

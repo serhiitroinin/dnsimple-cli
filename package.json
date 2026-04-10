@@ -1,0 +1,33 @@
+{
+  "name": "dnsimple-cli",
+  "version": "1.0.0",
+  "description": "A comprehensive CLI for the DNSimple DNS management API",
+  "module": "src/index.ts",
+  "type": "module",
+  "bin": {
+    "dnsimple": "./dist/dnsimple"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --compile --outfile dist/dnsimple",
+    "build:all": "bun run build:darwin-arm64 && bun run build:darwin-x64 && bun run build:linux-x64 && bun run build:linux-arm64",
+    "build:darwin-arm64": "bun build src/index.ts --compile --target=bun-darwin-arm64 --outfile dist/dnsimple-darwin-arm64",
+    "build:darwin-x64": "bun build src/index.ts --compile --target=bun-darwin-x64 --outfile dist/dnsimple-darwin-x64",
+    "build:linux-x64": "bun build src/index.ts --compile --target=bun-linux-x64 --outfile dist/dnsimple-linux-x64",
+    "build:linux-arm64": "bun build src/index.ts --compile --target=bun-linux-arm64 --outfile dist/dnsimple-linux-arm64"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3",
+    "conf": "^15.1.0",
+    "open": "^11.0.0",
+    "ora": "^9.3.0"
+  }
+}

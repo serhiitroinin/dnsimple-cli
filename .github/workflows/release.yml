@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 1.2.3, without the v prefix)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, release, and update tap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build all platform binaries and tarballs
+        run: bash scripts/release.sh "${{ steps.version.outputs.version }}"
+
+      - name: Read sha256 sums
+        id: sha
+        run: |
+          # SHA256SUMS lines look like: "<sha>  dnsimple-<arch>.tar.gz"
+          while read sha file; do
+            arch="${file#dnsimple-}"
+            arch="${arch%.tar.gz}"
+            key="$(echo "${arch}" | tr '-' '_')"
+            echo "${key}=${sha}" >> "$GITHUB_OUTPUT"
+          done < dist/SHA256SUMS
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          # If the tag already exists (because we were triggered by a tag push),
+          # `gh release create` will use it as-is. If we were triggered manually,
+          # gh will create the tag from the current commit.
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — uploading assets only."
+            gh release upload "${TAG}" dist/dnsimple-*.tar.gz dist/SHA256SUMS --clobber
+          else
+            gh release create "${TAG}" \
+              dist/dnsimple-*.tar.gz dist/SHA256SUMS \
+              --title "${TAG}" \
+              --generate-notes
+          fi
+
+      - name: Update homebrew-tap formula
+        if: ${{ env.HOMEBREW_TAP_TOKEN != '' }}
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          DARWIN_ARM64: ${{ steps.sha.outputs.darwin_arm64 }}
+          DARWIN_X64: ${{ steps.sha.outputs.darwin_x64 }}
+          LINUX_ARM64: ${{ steps.sha.outputs.linux_arm64 }}
+          LINUX_X64: ${{ steps.sha.outputs.linux_x64 }}
+        run: |
+          set -euo pipefail
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/serhiitroinin/homebrew-tap.git" tap
+          cd tap
+
+          # Use the in-repo formula as a template, then substitute version and sha256s.
+          cp ../Formula/dnsimple-cli.rb Formula/dnsimple-cli.rb
+          sed -i "s/^  version \".*\"/  version \"${VERSION}\"/" Formula/dnsimple-cli.rb
+          sed -i "s|REPLACE_WITH_DARWIN_ARM64_SHA256|${DARWIN_ARM64}|" Formula/dnsimple-cli.rb
+          sed -i "s|REPLACE_WITH_DARWIN_X64_SHA256|${DARWIN_X64}|" Formula/dnsimple-cli.rb
+          sed -i "s|REPLACE_WITH_LINUX_ARM64_SHA256|${LINUX_ARM64}|" Formula/dnsimple-cli.rb
+          sed -i "s|REPLACE_WITH_LINUX_X64_SHA256|${LINUX_X64}|" Formula/dnsimple-cli.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/dnsimple-cli.rb
+          if git diff --cached --quiet; then
+            echo "No formula changes to commit."
+          else
+            git commit -m "dnsimple-cli ${VERSION}"
+            git push origin main
+          fi

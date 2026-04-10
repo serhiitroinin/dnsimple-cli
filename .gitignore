@@ -1,3 +1,7 @@
+# Override global ignore — this project's release scripts are checked in.
+!scripts/
+!scripts/**
+
 # dependencies (bun install)
 node_modules
 
